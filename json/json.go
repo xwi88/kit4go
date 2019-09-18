@@ -8,7 +8,7 @@ package json
 
 import "encoding/json"
 
-// PKG import package name
+// PKG package name imported
 const PKG = "encoding/json"
 
 var (
