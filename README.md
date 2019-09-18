@@ -1,2 +1,8 @@
 # kit4go
-kit for go with lots of tools
+
+Kit for go
+
+## Supported or TODO
+
+* [x] json
+    wrap: encoding/json & jsoniter
