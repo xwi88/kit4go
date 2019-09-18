@@ -7,10 +7,10 @@
 package json
 
 import (
-	jsoniter "github.com/json-iterator/go"
+	 "github.com/json-iterator/go"
 )
 
-// PKG import package name
+// PKG package name imported
 const PKG = "jsoniter"
 
 var (
