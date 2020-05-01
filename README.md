@@ -6,3 +6,5 @@ Kit for go
 
 * [x] json
     wrap: encoding/json & jsoniter
+* [x] datetime util
+* [ ] version util
