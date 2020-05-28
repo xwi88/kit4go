@@ -15,3 +15,4 @@ go get -u github.com/xwi88/kit4go
 * [x] datetime util
 * [x] [version util](github.com/xwi88/version)
 * [x] mysql client
+* [x] aerospike client
