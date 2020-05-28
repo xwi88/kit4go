@@ -3,7 +3,9 @@ module github.com/xwi88/kit4go
 go 1.14
 
 require (
+	github.com/Shopify/sarama v1.26.4
 	github.com/aerospike/aerospike-client-go v2.11.0+incompatible
+	github.com/bsm/sarama-cluster v2.1.15+incompatible
 	github.com/go-sql-driver/mysql v1.5.0
 	github.com/json-iterator/go v1.1.9
 	github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e // indirect
