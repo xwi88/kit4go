@@ -8,7 +8,7 @@ import (
 
 // GetDateTimeLayoutISO8601WithFormatAndZoneOffset
 func GetDateTimeLayoutISO8601WithFormatAndZoneOffset(format string, zoneOffset int) string {
-	zone := DefaultZoneOffset
+	var zone string
 	if zoneOffset <= -24 || zoneOffset >= 24 {
 		zoneOffset = 0
 	}

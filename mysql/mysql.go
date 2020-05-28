@@ -53,6 +53,15 @@ func SSLMode(b bool) Option {
 	})
 }
 
+// ParseTime ...
+func ParseTime(parseTime bool) Option {
+	return optionFunc(func(do *MySql) {
+		if parseTime {
+			do.parseTime = parseTime
+		}
+	})
+}
+
 // MaxOpenConnections ...
 func MaxOpenConnections(i int) Option {
 	return optionFunc(func(do *MySql) {
@@ -129,12 +138,14 @@ func Dial(addr, user, password, dbName string, options ...Option) (c *Client, er
 	}
 
 	urlBuf := bytes.NewBufferString(fmt.Sprintf("%s:%s@%s(%s)/%s", do.user, do.password, "tcp", do.addr, do.dbName))
-	urlBuf.WriteString("?parseTime=True")
+	if do.parseTime {
+		urlBuf.WriteString("?parseTime=True")
+	}
 
 	if do.charset != "" {
 		urlBuf.WriteString(fmt.Sprintf("&charset=%s", do.charset))
 	} else {
-		urlBuf.WriteString(fmt.Sprintf("&charset=utf8mb4"))
+		urlBuf.WriteString("&charset=utf8mb4")
 	}
 
 	if do.loc != "" {
