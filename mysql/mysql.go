@@ -138,8 +138,11 @@ func Dial(addr, user, password, dbName string, options ...Option) (c *Client, er
 	}
 
 	urlBuf := bytes.NewBufferString(fmt.Sprintf("%s:%s@%s(%s)/%s", do.user, do.password, "tcp", do.addr, do.dbName))
+	// Notes: Watch out here, must start ?
 	if do.parseTime {
 		urlBuf.WriteString("?parseTime=True")
+	} else {
+		urlBuf.WriteString("?parseTime=False")
 	}
 
 	if do.charset != "" {
@@ -163,10 +166,11 @@ func Dial(addr, user, password, dbName string, options ...Option) (c *Client, er
 	db.SetMaxOpenConns(do.maxOpenConnections)
 
 	connMaxLifeTime := do.connMaxLifetime
-	if connMaxLifeTime < 30 {
-		connMaxLifeTime = 30
+	// less than 1 second, set 30 second
+	if connMaxLifeTime <= time.Second {
+		connMaxLifeTime = time.Second * 30
 	}
-	db.SetConnMaxLifetime(time.Duration(connMaxLifeTime) * time.Second)
+	db.SetConnMaxLifetime(connMaxLifeTime)
 	txDB := &TxDB{MDB: db}
 
 	err = db.Ping()
