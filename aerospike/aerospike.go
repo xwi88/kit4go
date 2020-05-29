@@ -2,12 +2,12 @@
 package aerospike
 
 import (
-	"log"
 	"strconv"
 	"strings"
 	"time"
 
 	as "github.com/aerospike/aerospike-client-go"
+	"github.com/kdpujie/log4go"
 )
 
 // Client aerospike client
@@ -109,7 +109,7 @@ func New(hosts []string, options ...Option) (*Client, error) {
 	}
 	isConnected := c.IsConnected()
 	if !isConnected {
-		log.Printf("aerospike connected failed")
+		log4go.Error("[aerospike] connected failed")
 	}
 	return &Client{c: c}, err
 }

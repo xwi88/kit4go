@@ -3,10 +3,11 @@ package utils
 
 import (
 	"io/ioutil"
-	"log"
 	"net"
 	"strings"
 	"time"
+
+	"github.com/kdpujie/log4go"
 )
 
 // LocalIPByTCP  get local ip through the public server
@@ -48,7 +49,7 @@ func PublicIP() (string, error) {
 	conn, err := net.DialTimeout("tcp", "ns1.dnspod.net:6666", timeout*time.Second)
 	defer func() {
 		if x := recover(); x != nil {
-			log.Println("Can not get public ip", x)
+			log4go.Error("Can not get public ip, err:%v", x)
 		}
 		if conn != nil {
 			_ = conn.Close()

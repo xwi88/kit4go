@@ -2,9 +2,8 @@
 package kafka
 
 import (
-	"log"
-
 	"github.com/Shopify/sarama"
+	"github.com/kdpujie/log4go"
 )
 
 var (
@@ -33,12 +32,12 @@ func NewAsyncProducer(brokers []string, bufferSize int, cfg *sarama.Config) (ap 
 	ap.cfg = cfg
 	ap.messages = make(chan *sarama.ProducerMessage, bufferSize)
 	ap.stop = make(chan struct{})
-	ap.producer, err = sarama.NewAsyncProducer(brokers, cfg)
+	ap.producer, err = sarama.NewAsyncProducer(brokers, ap.cfg)
 	if err != nil {
 		return nil, err
 	}
 	go ap.daemonProducer()
-	log.Printf("[asyncProducer] start, brokers:%v, bufferSize:%v", brokers, bufferSize)
+	log4go.Debug("[asyncProducer] start, brokers:%v, bufferSize:%v", brokers, bufferSize)
 	return ap, nil
 }
 
@@ -55,7 +54,7 @@ func (ap *AsyncProducer) daemonProducer() {
 	go func() {
 		if ap.cfg.Producer.Return.Successes {
 			for pm := range ap.producer.Successes() {
-				log.Printf("[asyncProducer] return, successes:%v", pm)
+				log4go.Debug("[asyncProducer] return, successes:%v", pm)
 			}
 		}
 	}()
@@ -64,7 +63,7 @@ func (ap *AsyncProducer) daemonProducer() {
 	go func() {
 		if ap.cfg.Producer.Return.Errors {
 			for pe := range ap.producer.Errors() {
-				log.Printf("[asyncProducer] return, errors:%v", pe.Error())
+				log4go.Error("[asyncProducer] return, errors:%v", pe.Error())
 			}
 		}
 	}()

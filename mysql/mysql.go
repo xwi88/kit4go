@@ -8,11 +8,11 @@ import (
 	"bytes"
 	"database/sql"
 	"fmt"
-	"log"
 	"strings"
 	"time"
 
 	_ "github.com/go-sql-driver/mysql" // init and register mysql driver
+	"github.com/kdpujie/log4go"
 )
 
 // Client MySql transaction db
@@ -235,11 +235,11 @@ func Dial(addr, user, password, dbName string, options ...Option) (c *Client, er
 	}
 
 	if do.tls {
-		urlBuf.WriteString(fmt.Sprintf("&tls=true"))
+		urlBuf.WriteString("&tls=true")
 	}
 
 	if do.debug {
-		log.Printf("[mysql] dataSourceName:%v", urlBuf.String())
+		log4go.Debug("[mysql] dataSourceName:%v", urlBuf.String())
 	}
 	db, err := sql.Open("mysql", urlBuf.String())
 	if err != nil {
@@ -257,7 +257,7 @@ func Dial(addr, user, password, dbName string, options ...Option) (c *Client, er
 	txDB := &TxDB{MDB: db}
 
 	if do.debug {
-		log.Printf("[mysql] db config:%#v", do)
+		log4go.Debug("[mysql] db config:%#v", do)
 	}
 	err = db.Ping()
 	if err != nil {

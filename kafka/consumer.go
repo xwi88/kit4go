@@ -2,10 +2,11 @@
 package kafka
 
 import (
-	"log"
+	"time"
 
 	"github.com/Shopify/sarama"
 	cluster "github.com/bsm/sarama-cluster"
+	"github.com/kdpujie/log4go"
 )
 
 // Consumer simple consumer
@@ -25,7 +26,7 @@ func NewConsumer(brokers, topics []string, groupID string, config *cluster.Confi
 	if err != nil {
 		return nil, err
 	}
-	log.Printf("[consumer] start, brokers:%s, topics:%s, groupID:%v", brokers, topics, groupID)
+	log4go.Debug("[consumer] start, brokers:%s, topics:%s, groupID:%v", brokers, topics, groupID)
 	return &Consumer{c: consumer, topics: topics, groupID: groupID, hasFunc: false,
 		closeStart: make(chan struct{}), closeEnd: make(chan struct{}),
 	}, nil
@@ -34,7 +35,7 @@ func NewConsumer(brokers, topics []string, groupID string, config *cluster.Confi
 // Close consumer
 func (c *Consumer) Close() error {
 	if !c.hasFunc {
-		log.Println("[consumer] close direct, as no consume func")
+		log4go.Debug("[consumer] close direct, as no consume func")
 		return nil
 	}
 	c.closeStart <- struct{}{}
@@ -46,12 +47,18 @@ func (c *Consumer) Close() error {
 func (c *Consumer) StartConsumer(fn func(*sarama.ConsumerMessage)) {
 	if fn != nil {
 		c.hasFunc = true
+	} else {
+		log4go.Error("[consumer] consume failed, handler func nil, topics:%v, groupID:%v",
+			c.topics, c.groupID)
+		// avoid high frequency output, if in infinite loop
+		time.Sleep(time.Second * 1)
+		return
 	}
 
 	// consume errors
 	go func() {
 		for err := range c.c.Errors() {
-			log.Printf("[consumer] consume errors, topics:%v, groupID:%v, err:%v",
+			log4go.Error("[consumer] consume errors, topics:%v, groupID:%v, err:%v",
 				c.topics, c.groupID, err.Error())
 		}
 	}()
@@ -59,7 +66,7 @@ func (c *Consumer) StartConsumer(fn func(*sarama.ConsumerMessage)) {
 	// consume notifications
 	go func() {
 		for ntf := range c.c.Notifications() {
-			log.Printf("[consumer] consume notifications, topics:%v, groupID:%v, notification:%v",
+			log4go.Debug("[consumer] consume notifications, topics:%v, groupID:%v, notification:%v",
 				c.topics, c.groupID, ntf)
 		}
 	}()
@@ -80,7 +87,7 @@ loop:
 			break loop
 		}
 	}
-	log.Printf("[consumer] failed, topics:%v, groupID:%v, failures:%v",
+	log4go.Warn("[consumer] failed, topics:%v, groupID:%v, failures:%v",
 		c.topics, c.groupID, failures)
 	c.closeEnd <- struct{}{}
 }

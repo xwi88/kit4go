@@ -2,9 +2,8 @@
 package kafka
 
 import (
-	"log"
-
 	"github.com/Shopify/sarama"
+	"github.com/kdpujie/log4go"
 
 	"github.com/xwi88/kit4go/utils"
 )
@@ -34,12 +33,12 @@ func NewSyncProducer(brokers []string, bufferSize int, cfg *sarama.Config) (sp *
 	}
 	sp.messages = make(chan *sarama.ProducerMessage, bufferSize)
 	sp.stop = make(chan struct{})
-	sp.producer, err = sarama.NewSyncProducer(brokers, cfg)
+	sp.producer, err = sarama.NewSyncProducer(brokers, sp.cfg)
 	if err != nil {
 		return nil, err
 	}
 	go sp.daemonProducer()
-	log.Printf("[syncProducer] start, brokers:%v, bufferSize:%v", brokers, bufferSize)
+	log4go.Debug("[syncProducer] start, brokers:%v, bufferSize:%v", brokers, bufferSize)
 	return sp, nil
 }
 
@@ -61,7 +60,7 @@ func (sp *SyncProducer) daemonProducer() {
 		m, _ := utils.ToJsonString(mes)
 		partition, offset, err := sp.producer.SendMessage(mes)
 		if err != nil {
-			log.Printf("[syncProducer] return, partition:%v, offset:%v, msg:%v, err:%v",
+			log4go.Error("[syncProducer] return, partition:%v, offset:%v, msg:%v, err:%v",
 				partition, offset, m, err.Error())
 		}
 	}

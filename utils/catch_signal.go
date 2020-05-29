@@ -2,11 +2,12 @@
 package utils
 
 import (
-	"log"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
+
+	"github.com/kdpujie/log4go"
 )
 
 const (
@@ -66,7 +67,7 @@ func (s *CatchSignal) Start() {
 	// kill -9 pid => SIGKILL
 	// os.Interrupt, os.Kill, syscall.SIGUSR1, syscall.SIGUSR2
 	if s.run {
-		log.Printf("CatchSignal has been started, shall not start again!")
+		log4go.Warn("CatchSignal has been started, shall not start again!")
 		return
 	}
 	s.run = true
@@ -96,11 +97,11 @@ func (s *CatchSignal) deal() {
 			os.Exit(int(sig.(syscall.Signal)))
 		case syscall.SIGUSR1, syscall.SIGUSR2:
 			// SigGroupNameUsr
-			log.Printf("signal:usr1|usr2 %v", sig)
+			log4go.Warn("signal:usr1|usr2 %v", sig)
 			s.executeFunc(SigGroupNameUsr)
 		default:
 			// SigGroupNameOther
-			log.Printf("signal:other %v", sig)
+			log4go.Warn("signal:other %v", sig)
 			s.executeFunc(SigGroupNameOther)
 		}
 	}
