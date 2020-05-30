@@ -3,18 +3,25 @@ package kafka
 
 import (
 	"context"
+	"errors"
+	"strings"
 	"time"
 
 	"github.com/Shopify/sarama"
 	"github.com/kdpujie/log4go"
 )
 
+// TODO: refactor, init & get & start & close & restart & restartWithConfig
+// TODO: some errors, some times, exit(default)|restart(forever)
+
 // ConsumerGroup consumer group
 type ConsumerGroup struct {
 	cg         sarama.ConsumerGroup
+	brokers    []string
 	topics     []string
 	groupID    string
 	hasFunc    bool
+	config     *sarama.Config
 	ctx        context.Context
 	cancelFunc context.CancelFunc
 }
@@ -31,8 +38,10 @@ func NewConsumerGroup(brokers, topics []string, groupID string, config *sarama.C
 	return &ConsumerGroup{
 		cg:      cg,
 		groupID: groupID,
+		brokers: brokers,
 		topics:  topics,
 		hasFunc: false,
+		config:  config,
 		ctx:     ctx,
 	}, nil
 }
@@ -52,7 +61,7 @@ func (c *ConsumerGroup) Close() error {
 }
 
 // StartConsumer shall run with keywords go
-func (c *ConsumerGroup) StartConsumer(ctx context.Context, handler sarama.ConsumerGroupHandler) {
+func (c *ConsumerGroup) StartConsumer(ctx context.Context, handler sarama.ConsumerGroupHandler) error {
 	if handler != nil {
 		c.hasFunc = true
 		c.ctx = ctx
@@ -61,22 +70,30 @@ func (c *ConsumerGroup) StartConsumer(ctx context.Context, handler sarama.Consum
 			c.topics, c.groupID)
 		// avoid high frequency output, if in infinite loop
 		time.Sleep(time.Second * 1)
-		return
+		return nil
 	}
-
-	// consume errors
-	go func() {
-		for err := range c.cg.Errors() {
-			log4go.Error("[consumerGroup] consume errors, topics:%v, groupID:%v, err:%s",
-				c.topics, c.groupID, err.Error())
-		}
-	}()
 
 	var failures int
 	_ctx, cancelFunc := context.WithCancel(ctx)
 	c.cancelFunc = cancelFunc
 	log4go.Debug("[consumerGroup] bind cancelFun, topics:%v, groupID:%v, cancelFun:%v",
 		c.topics, c.groupID, cancelFunc)
+
+	var reCreatedError error
+	// consume errors
+	go func() {
+		for err := range c.cg.Errors() {
+			log4go.Error("[consumerGroup] consume errors, topics:%v, groupID:%v, err:%s",
+				c.topics, c.groupID, err.Error())
+			if strings.Contains(err.Error(), "connection reset by peer") ||
+				strings.Contains(err.Error(), "timeout") ||
+				strings.Contains(err.Error(), "network is unreachable") {
+				reCreatedError = errors.New("consumerGroup need to created again")
+				c.cancelFunc()
+				break
+			}
+		}
+	}()
 
 loop:
 	for {
@@ -95,7 +112,7 @@ loop:
 				break loop
 			}
 		} else {
-			log4go.Warn("[consumerGroup] consume exist, topics:%v, groupID:%v",
+			log4go.Warn("[consumerGroup] consume exit, topics:%v, groupID:%v",
 				c.topics, c.groupID)
 		}
 
@@ -109,7 +126,9 @@ loop:
 	if err := c.cg.Close(); err != nil {
 		log4go.Error("[consumerGroup] close failed, topics:%v, groupID:%v, failures:%v, err:%v",
 			c.topics, c.groupID, failures, err.Error())
+		return err
 	} else {
 		log4go.Info("[consumerGroup] close success, topics:%v, groupID:%v", c.topics, c.groupID)
 	}
+	return reCreatedError
 }
