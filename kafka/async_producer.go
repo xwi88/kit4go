@@ -16,6 +16,7 @@ type AsyncProducer struct {
 	producer sarama.AsyncProducer
 	messages chan *sarama.ProducerMessage
 	cfg      *sarama.Config
+	addrs    []string
 	stop     chan struct{}
 }
 
@@ -32,12 +33,13 @@ func NewAsyncProducer(brokers []string, bufferSize int, cfg *sarama.Config) (ap 
 	ap.cfg = cfg
 	ap.messages = make(chan *sarama.ProducerMessage, bufferSize)
 	ap.stop = make(chan struct{})
+	ap.addrs = brokers
 	ap.producer, err = sarama.NewAsyncProducer(brokers, ap.cfg)
 	if err != nil {
 		return nil, err
 	}
 	go ap.daemonProducer()
-	log4go.Debug("[asyncProducer] start, brokers:%v, bufferSize:%v", brokers, bufferSize)
+	log4go.Debug("[asyncProducer] created, brokers:%v, bufferSize:%v", brokers, bufferSize)
 	return ap, nil
 }
 
@@ -82,5 +84,6 @@ func (ap *AsyncProducer) daemonProducer() {
 func (ap *AsyncProducer) Close() error {
 	close(ap.messages)
 	<-ap.stop
+	log4go.Info("[asyncProducer] close, brokers:%v, bufferSize:%v", ap.addrs, ap.cfg.ChannelBufferSize)
 	return ap.producer.Close()
 }

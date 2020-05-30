@@ -26,7 +26,7 @@ func NewConsumerGroup(brokers, topics []string, groupID string, config *sarama.C
 	if err != nil {
 		return nil, err
 	}
-	log4go.Debug("[consumerGroup] start, brokers:%s, topics:%s, groupID:%s", brokers, topics, groupID)
+	log4go.Debug("[consumerGroup] created, brokers:%s, topics:%s, groupID:%s", brokers, topics, groupID)
 	ctx := context.Background() // init context, maybe ignore
 	return &ConsumerGroup{
 		cg:      cg,
@@ -40,13 +40,13 @@ func NewConsumerGroup(brokers, topics []string, groupID string, config *sarama.C
 // Close consumer group
 func (c *ConsumerGroup) Close() error {
 	if !c.hasFunc {
-		log4go.Debug("[consumerGroup] close direct, as no consume handler")
+		log4go.Info("[consumerGroup] close direct, as no consume handler")
 		return nil
 	}
 	if c.cancelFunc != nil {
 		c.cancelFunc()
 	}
-	log4go.Debug("[consumerGroup] close called, topics:%v, groupID:%v, cancelFunc:%v",
+	log4go.Info("[consumerGroup] close called, topics:%v, groupID:%v, cancelFunc:%v",
 		c.topics, c.groupID, c.cancelFunc)
 	return nil
 }
@@ -77,6 +77,7 @@ func (c *ConsumerGroup) StartConsumer(ctx context.Context, handler sarama.Consum
 	c.cancelFunc = cancelFunc
 	log4go.Debug("[consumerGroup] bind cancelFun, topics:%v, groupID:%v, cancelFun:%v",
 		c.topics, c.groupID, cancelFunc)
+
 loop:
 	for {
 		// `Consume` should be called inside an infinite loop, when a
@@ -93,18 +94,22 @@ loop:
 				time.Sleep(time.Second) // avoid frequency output in infinite loop!
 				break loop
 			}
+		} else {
+			log4go.Warn("[consumerGroup] consume exist, topics:%v, groupID:%v",
+				c.topics, c.groupID)
 		}
 
 		select {
 		case <-_ctx.Done():
-			log4go.Warn("[consumerGroup] context done, topics:%v, groupID:%v, failures:%v, err:%v",
+			log4go.Info("[consumerGroup] context done, topics:%v, groupID:%v, failures:%v, err:%v",
 				c.topics, c.groupID, failures, _ctx.Err())
 			break loop
 		}
 	}
-
 	if err := c.cg.Close(); err != nil {
 		log4go.Error("[consumerGroup] close failed, topics:%v, groupID:%v, failures:%v, err:%v",
 			c.topics, c.groupID, failures, err.Error())
+	} else {
+		log4go.Info("[consumerGroup] close success, topics:%v, groupID:%v", c.topics, c.groupID)
 	}
 }

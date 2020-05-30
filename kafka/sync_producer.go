@@ -18,6 +18,7 @@ type SyncProducer struct {
 	producer sarama.SyncProducer
 	messages chan *sarama.ProducerMessage
 	cfg      *sarama.Config
+	addrs    []string
 	stop     chan struct{}
 }
 
@@ -33,12 +34,13 @@ func NewSyncProducer(brokers []string, bufferSize int, cfg *sarama.Config) (sp *
 	}
 	sp.messages = make(chan *sarama.ProducerMessage, bufferSize)
 	sp.stop = make(chan struct{})
+	sp.addrs = brokers
 	sp.producer, err = sarama.NewSyncProducer(brokers, sp.cfg)
 	if err != nil {
 		return nil, err
 	}
 	go sp.daemonProducer()
-	log4go.Debug("[syncProducer] start, brokers:%v, bufferSize:%v", brokers, bufferSize)
+	log4go.Debug("[syncProducer] created, brokers:%v, bufferSize:%v", brokers, bufferSize)
 	return sp, nil
 }
 
@@ -70,5 +72,6 @@ func (sp *SyncProducer) daemonProducer() {
 func (sp *SyncProducer) Close() error {
 	close(sp.messages)
 	<-sp.stop
+	log4go.Info("[syncProducer] close, brokers:%v, bufferSize:%v", sp.addrs, sp.cfg.ChannelBufferSize)
 	return sp.producer.Close()
 }

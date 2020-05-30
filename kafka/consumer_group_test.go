@@ -21,10 +21,13 @@ func (exampleConsumerGroupHandler) Cleanup(_ sarama.ConsumerGroupSession) error 
 }
 func (h exampleConsumerGroupHandler) ConsumeClaim(sess sarama.ConsumerGroupSession, claim sarama.ConsumerGroupClaim) error {
 	for msg := range claim.Messages() {
-		log4go.Info("[exampleConsumerGroupHandler] topic:%q partition:%d offset:%d", msg.Topic, msg.Partition, msg.Offset)
+		log4go.Info("[exampleConsumerGroupHandler] topic:%q partition:%d offset:%d",
+			msg.Topic, msg.Partition, msg.Offset)
+		// log4go.Info("[exampleConsumerGroupHandler] topic:%q partition:%d offset:%d, msg:%v",
+		// 	msg.Topic, msg.Partition, msg.Offset, string(msg.Value))
 		sess.MarkMessage(msg, "")
-		time.Sleep(time.Second * 5)
 	}
+	log4go.Warn("exit success")
 	return nil
 }
 
@@ -36,6 +39,15 @@ func TestConsumerGroupConsume(t *testing.T) {
 	config := sarama.NewConfig()
 	config.Version = sarama.V2_5_0_0 // specify appropriate version
 	config.Consumer.Return.Errors = true
+	config.Consumer.IsolationLevel = sarama.ReadCommitted // default ReadUncommitted=0
+	// config.Consumer.Offsets.Initial = sarama.OffsetOldest // default OffsetOldest=-2
+	config.Consumer.Offsets.Initial = sarama.OffsetNewest // default OffsetOldest=-2
+	// config.Consumer.Group.Rebalance.Timeout = time.Second*60 // default 60s
+	// config.Consumer.Group.Rebalance.Strategy = sarama.BalanceStrategyRange      // default BalanceStrategyRange
+	// config.Consumer.Group.Rebalance.Strategy = sarama.BalanceStrategyRoundRobin // default BalanceStrategyRange
+	config.Consumer.Group.Rebalance.Strategy = sarama.BalanceStrategySticky // default BalanceStrategyRange
+	config.Consumer.Group.Heartbeat.Interval = time.Second * 6
+	config.Consumer.Group.Session.Timeout = time.Second * 30
 
 	brokers := []string{
 		"10.14.41.57:9092",
@@ -49,32 +61,24 @@ func TestConsumerGroupConsume(t *testing.T) {
 	if err != nil {
 		panic(err)
 	}
-	defer func() { _ = group.Close() }()
+	// defer func() { _ = group.Close() }() // error ...
 
 	// Track errors
-	go func() {
-		for err := range group.cg.Errors() {
-			log4go.Info("[TestConsumerGroupConsume] consume errors:%v, type:%T, addr:%p", err, err, err)
-		}
-	}()
+	// go func() {
+	// 	for err := range group.cg.Errors() {
+	// 		log4go.Info("[TestConsumerGroupConsume] consume errors:%v, type:%T, addr:%p", err, err, err)
+	// 	}
+	// }()
 
-	go func() {
-		tk := time.NewTimer(time.Second * 3)
-		defer tk.Stop()
-		select {
-		case <-tk.C:
-			if err := group.Close(); err != nil {
-				log4go.Error("[TestConsumerGroupConsume] timer close, err:%v", err.Error())
-			}
-			break
-		}
-	}()
 	// Iterate over consumer sessions.
 	ctx := context.Background()
 
 	// single run
 	handler := exampleConsumerGroupHandler{}
-	group.StartConsumer(ctx, handler)
+	go group.StartConsumer(ctx, handler)
+	time.Sleep(time.Second * 20)
+	_ = group.Close()
+	time.Sleep(time.Second * 30)
 
 	// forbidden infinite loop called
 	// for {

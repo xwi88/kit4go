@@ -26,7 +26,7 @@ func NewConsumer(brokers, topics []string, groupID string, config *cluster.Confi
 	if err != nil {
 		return nil, err
 	}
-	log4go.Debug("[consumer] start, brokers:%s, topics:%s, groupID:%v", brokers, topics, groupID)
+	log4go.Debug("[consumer] created, brokers:%s, topics:%s, groupID:%v", brokers, topics, groupID)
 	return &Consumer{c: consumer, topics: topics, groupID: groupID, hasFunc: false,
 		closeStart: make(chan struct{}), closeEnd: make(chan struct{}),
 	}, nil
@@ -35,7 +35,7 @@ func NewConsumer(brokers, topics []string, groupID string, config *cluster.Confi
 // Close consumer
 func (c *Consumer) Close() error {
 	if !c.hasFunc {
-		log4go.Debug("[consumer] close direct, as no consume func")
+		log4go.Info("[consumer] close direct, as no consume func")
 		return nil
 	}
 	c.closeStart <- struct{}{}
@@ -84,10 +84,10 @@ loop:
 				failures++
 			}
 		case <-c.closeStart:
+			log4go.Warn("[consumer] close, topics:%v, groupID:%v, failures:%v", c.topics, c.groupID, failures)
 			break loop
 		}
 	}
-	log4go.Warn("[consumer] failed, topics:%v, groupID:%v, failures:%v",
-		c.topics, c.groupID, failures)
 	c.closeEnd <- struct{}{}
+	log4go.Info("[consumer] close success, topics:%v, groupID:%v", c.topics, c.groupID)
 }
