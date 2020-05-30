@@ -46,6 +46,9 @@ func TestConsumerGroupConsume(t *testing.T) {
 	// config.Consumer.Group.Rebalance.Strategy = sarama.BalanceStrategyRange      // default BalanceStrategyRange
 	// config.Consumer.Group.Rebalance.Strategy = sarama.BalanceStrategyRoundRobin // default BalanceStrategyRange
 	config.Consumer.Group.Rebalance.Strategy = sarama.BalanceStrategySticky // default BalanceStrategyRange
+	config.Consumer.Group.Rebalance.Timeout = time.Second * 60
+	config.Consumer.Group.Rebalance.Retry.Max = 4
+	config.Consumer.Group.Rebalance.Retry.Backoff = time.Second * 2
 	config.Consumer.Group.Heartbeat.Interval = time.Second * 6
 	config.Consumer.Group.Session.Timeout = time.Second * 30
 
@@ -76,9 +79,9 @@ func TestConsumerGroupConsume(t *testing.T) {
 	// single run
 	handler := exampleConsumerGroupHandler{}
 	go group.StartConsumer(ctx, handler)
-	time.Sleep(time.Second * 20)
+	time.Sleep(time.Second * 10)
 	_ = group.Close()
-	time.Sleep(time.Second * 30)
+	time.Sleep(time.Second * 5)
 
 	// forbidden infinite loop called
 	// for {
