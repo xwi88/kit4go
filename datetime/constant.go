@@ -14,8 +14,9 @@ const (
 	DefaultLayoutDate     = LayoutDateISO8601
 	DefaultLayoutDateTime = LayoutDateTime
 
+	DefaultZoneOffset = "+00"
+
 	// common use layout format with zone
-	DefaultZoneOffset                             = "+00"
 	FormatLayoutTimeISO8601WithZone               = "15:04:05%v:00"            // 14bit zone +xx:00
 	FormatLayoutTimeISO8601WithZoneMid            = "150405%v00"               // 11bit zone +xx00
 	FormatLayoutTimeISO8601WithZoneShort          = "150405%v"                 //  9bit zone +xx

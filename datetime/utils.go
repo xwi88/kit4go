@@ -6,8 +6,8 @@ import (
 	"time"
 )
 
-// GetDateTimeLayoutISO8601WithFormatAndZoneOffset
-func GetDateTimeLayoutISO8601WithFormatAndZoneOffset(format string, zoneOffset int) string {
+// GetDateTimeLayoutWithFormatAndZoneOffset default 2006-01-02T15:04:05%v:00
+func GetDateTimeLayoutWithFormatAndZoneOffset(format string, zoneOffset int) string {
 	var zone string
 	if zoneOffset <= -24 || zoneOffset >= 24 {
 		zoneOffset = 0
@@ -26,14 +26,39 @@ func GetDateTimeLayoutISO8601WithFormatAndZoneOffset(format string, zoneOffset i
 	return fmt.Sprintf(format, zone)
 }
 
-// NowUnix return now Unix time
+// GetDateTimeLayoutISO8601WithZoneOffset 2006-01-02T15:04:05%v:00
+func GetDateTimeLayoutISO8601WithZoneOffset(zoneOffset int) string {
+	return GetDateTimeLayoutWithFormatAndZoneOffset(FormatLayoutDateTimeISO8601WithZone, zoneOffset)
+}
+
+// GetDateTimeLayoutISO8601WithFormatAndZoneOffsetZoneMid 2006-01-02T15:04:05%v00
+func GetDateTimeLayoutISO8601WithFormatAndZoneOffsetZoneMid(zoneOffset int) string {
+	return GetDateTimeLayoutWithFormatAndZoneOffset(FormatLayoutDateTimeISO8601WithZoneMid, zoneOffset)
+}
+
+// NowUnix return now Unix time, second
 func NowUnix() int64 {
 	return time.Now().Unix()
 }
 
-// NowUnixNano return now UnixNano time
+// NowUnixMillisecond return now Millisecond time, millisecond
+func NowUnixMillisecond() int64 {
+	return int64(time.Now().Nanosecond() / 1000000)
+}
+
+// NowUnixMicrosecond return now Microsecond time, microsecond
+func NowUnixMicrosecond() int64 {
+	return int64(time.Now().Nanosecond() / 1000)
+}
+
+// NowUnixNano return now UnixNano time, unix nano second
 func NowUnixNano() int64 {
 	return time.Now().UnixNano()
+}
+
+// NowTimestampStr with layout
+func NowTimestampStr(layout string) string {
+	return time.Now().Format(layout)
 }
 
 // DeltaHours return the hours for t2 - t1
@@ -71,12 +96,46 @@ func GetTimeStr(layout string, d time.Time) string {
 	return time2Str(layout, d)
 }
 
+// ParseTime parse time with local timezone
+func ParseTime(layout, value string) (time.Time, error) {
+	return ParseTimeWithLocation(layout, value, time.Local)
+}
+
+// ParseTimeWithLocation ...
+func ParseTimeWithLocation(layout, value string, loc *time.Location) (time.Time, error) {
+	if loc == nil {
+		loc = time.Local
+	}
+	return time.ParseInLocation(layout, value, loc)
+}
+
+// GetFirstDateOfMonth get the first datetime for this month
+func GetFirstDateOfMonth(d time.Time) time.Time {
+	d = d.AddDate(0, 0, -d.Day()+1)
+	return GetStartTime(d)
+}
+
+// GetLastDateOfMonth get the last datetime for this month
+func GetLastDateOfMonth(d time.Time) time.Time {
+	return GetFirstDateOfMonth(d).AddDate(0, 1, -1)
+}
+
+// GetStartTime get the start time for the special day, ex: 2006-06-01T00:00:00.999+08:00
+func GetStartTime(d time.Time) time.Time {
+	return time.Date(d.Year(), d.Month(), d.Day(), 0, 0, 0, 0, d.Location())
+}
+
 // GetStartTimeStr get start time str for the special time
 func GetStartTimeStr(layout string, d time.Time) string {
 	if len(layout) == 0 {
 		layout = LayoutDateTime
 	}
 	return GetStartTime(d).Format(layout)
+}
+
+// GetEndTime get the end time for the special day, ex: 2019-06-01T23:59:59.999+08:00
+func GetEndTime(d time.Time) time.Time {
+	return time.Date(d.Year(), d.Month(), d.Day(), 23, 59, 59, 1e9-1, d.Location())
 }
 
 // GetEndTimeStr get end time str for the special time
@@ -107,40 +166,6 @@ func GetStartEndTimeStrWithZone(layout string, d time.Time) (start, end string) 
 	return
 }
 
-// ParseTime parse time with local timezone
-func ParseTime(layout, value string) (time.Time, error) {
-	return ParseTimeWithLocation(layout, value, time.Local)
-}
-
-// ParseTimeWithLocation ...
-func ParseTimeWithLocation(layout, value string, loc *time.Location) (time.Time, error) {
-	if loc == nil {
-		loc = time.Local
-	}
-	return time.ParseInLocation(layout, value, loc)
-}
-
-// GetFirstDateOfMonth get the first datetime for this month
-func GetFirstDateOfMonth(d time.Time) time.Time {
-	d = d.AddDate(0, 0, -d.Day()+1)
-	return GetStartTime(d)
-}
-
-// GetLastDateOfMonth get the last datetime for this month
-func GetLastDateOfMonth(d time.Time) time.Time {
-	return GetFirstDateOfMonth(d).AddDate(0, 1, -1)
-}
-
-// GetStartTime get the start time for the special day, ex: 2006-06-01T00:00:00.999+08:00
-func GetStartTime(d time.Time) time.Time {
-	return time.Date(d.Year(), d.Month(), d.Day(), 0, 0, 0, 0, d.Location())
-}
-
-// GetEndTime get the end time for the special day, ex: 2019-06-01T23:59:59.999+08:00
-func GetEndTime(d time.Time) time.Time {
-	return time.Date(d.Year(), d.Month(), d.Day(), 23, 59, 59, 1e9-1, d.Location())
-}
-
 // GetNowWithZone get now time with special location
 // time format: ISO8601:2004 2004-05-03T17:30:08+08:00
 // go format: 2006-01-02T15:04:05+00:00
@@ -150,6 +175,21 @@ func GetNowWithZone(loc *time.Location) time.Time {
 		loc = time.Local
 	}
 	if t, err := time.ParseInLocation(LayoutDateTime, time2Str(LayoutDateTime, now), loc); err == nil {
+		return t
+	}
+	return now
+}
+
+// GetNowWithZoneAndLayout get now time with special location and special layout
+func GetNowWithZoneAndLayout(loc *time.Location, layout string) time.Time {
+	now := time.Now()
+	if loc == nil {
+		loc = time.Local
+	}
+	if layout == "" {
+		layout = LayoutDateTime
+	}
+	if t, err := time.ParseInLocation(layout, time2Str(layout, now), loc); err == nil {
 		return t
 	}
 	return now
