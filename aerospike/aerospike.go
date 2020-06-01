@@ -12,7 +12,7 @@ import (
 
 // Client aerospike client
 type Client struct {
-	c *as.Client
+	C *as.Client
 }
 
 type Option interface {
@@ -111,11 +111,11 @@ func New(hosts []string, options ...Option) (*Client, error) {
 	if !isConnected {
 		log4go.Error("[aerospike] connected failed")
 	}
-	return &Client{c: c}, err
+	return &Client{C: c}, err
 }
 
 // Close the client
 func (c *Client) Close() (err error) {
-	c.c.Close()
+	c.C.Close()
 	return err
 }
