@@ -243,7 +243,8 @@ func Dial(addr, user, password, dbName string, options ...Option) (c *Client, er
 	}
 	db, err := sql.Open("mysql", urlBuf.String())
 	if err != nil {
-		panic(fmt.Sprintf("[mysql] Open()[%v] failed: %s", urlBuf.String(), err.Error()))
+		log4go.Error("[mysql] Open()[%v] failed: %s", urlBuf.String(), err.Error())
+		return nil, err
 	}
 	db.SetMaxIdleConns(do.maxIdleConnections)
 	db.SetMaxOpenConns(do.maxOpenConnections)
