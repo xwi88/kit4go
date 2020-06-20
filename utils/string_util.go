@@ -22,3 +22,37 @@ func ToJsonStringIndent(v interface{}) (string, error) {
 	}
 	return string(data), nil
 }
+
+// SubString sub string include chinese character
+func SubString(str string, begin, length int) string {
+	rs := []rune(str)
+	lth := len(rs)
+	if begin < 0 {
+		begin = 0
+	}
+	if begin >= lth {
+		begin = lth
+	}
+	end := begin + length
+
+	if end > lth {
+		end = lth
+	}
+	return string(rs[begin:end])
+}
+
+// SubStringFromEnd sub string include chinese character
+func SubStringFromEnd(str string, begin, end int) string {
+	rs := []rune(str)
+	lth := len(rs)
+	if begin < 0 {
+		begin = 0
+	}
+	if begin >= lth {
+		begin = lth
+	}
+	if end > lth {
+		end = lth
+	}
+	return string(rs[begin:end])
+}

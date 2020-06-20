@@ -19,6 +19,7 @@ cmd/**/test
 .vscode
 .glide
 .idea
+.DS_Store
 
 !.gitkeep
 

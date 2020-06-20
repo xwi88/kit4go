@@ -9,29 +9,7 @@ import (
 	"github.com/kdpujie/log4go"
 )
 
-type exampleConsumerGroupHandler struct{}
-
-func (exampleConsumerGroupHandler) Setup(_ sarama.ConsumerGroupSession) error {
-	log4go.Info("[exampleConsumerGroupHandler] Setup")
-	return nil
-}
-func (exampleConsumerGroupHandler) Cleanup(_ sarama.ConsumerGroupSession) error {
-	log4go.Info("[exampleConsumerGroupHandler] Cleanup")
-	return nil
-}
-func (h exampleConsumerGroupHandler) ConsumeClaim(sess sarama.ConsumerGroupSession, claim sarama.ConsumerGroupClaim) error {
-	for msg := range claim.Messages() {
-		log4go.Info("[exampleConsumerGroupHandler] topic:%q partition:%d offset:%d",
-			msg.Topic, msg.Partition, msg.Offset)
-		log4go.Info("[exampleConsumerGroupHandler] topic:%q partition:%d offset:%d, msg:%v",
-			msg.Topic, msg.Partition, msg.Offset, string(msg.Value))
-		sess.MarkMessage(msg, "")
-	}
-	log4go.Warn("exit success")
-	return nil
-}
-
-func TestConsumerGroupConsume(t *testing.T) {
+func TestConsumerConsume(t *testing.T) {
 	w := log4go.NewConsoleWriterWithLevel(log4go.DEBUG)
 	w.SetColor(true)
 	log4go.Register(w)
