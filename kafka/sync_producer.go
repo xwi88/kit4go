@@ -32,6 +32,7 @@ func NewSyncProducer(brokers []string, bufferSize int, cfg *sarama.Config) (sp *
 		// if set, but not greater than our limit DefaultAsyncProducerBufferSize, set it
 		bufferSize = DefaultSyncProducerBufferSize
 	}
+	sp.cfg = cfg
 	sp.messages = make(chan *sarama.ProducerMessage, bufferSize)
 	sp.stop = make(chan struct{})
 	sp.addrs = brokers

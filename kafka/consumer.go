@@ -66,7 +66,7 @@ func (c *Consumer) StartConsumer(fn func(*sarama.ConsumerMessage)) {
 	// consume notifications
 	go func() {
 		for ntf := range c.c.Notifications() {
-			log4go.Debug("[consumer] consume notifications, topics:%v, groupID:%v, notification:%v",
+			log4go.Debug("[consumer] consume notifications, topics:%v, groupID:%v, notification:%+v",
 				c.topics, c.groupID, ntf)
 		}
 	}()
