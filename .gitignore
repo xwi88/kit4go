@@ -31,3 +31,4 @@ build/bin
 *.inp
 *.oac
 *.nohup.out
+.DS_Store

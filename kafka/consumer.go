@@ -44,7 +44,7 @@ func (c *Consumer) Close() error {
 }
 
 // StartConsumer shall run with keywords go
-func (c *Consumer) StartConsumer(fn func(*sarama.ConsumerMessage)) {
+func (c *Consumer) StartConsumer(fn func(*sarama.ConsumerMessage) error) {
 	if fn != nil {
 		c.hasFunc = true
 	} else {
@@ -78,10 +78,14 @@ loop:
 		select {
 		case msg, ok := <-c.c.Messages():
 			if ok {
-				fn(msg)
-				// mark message as processed
-				c.c.MarkOffset(msg, "")
-				failures++
+				if err := fn(msg); err == nil {
+					// mark message as processed
+					c.c.MarkOffset(msg, "")
+				} else {
+					failures++
+					log4go.Error("[consumer] fn errors, count:%v, topics:%v, groupID:%v, err:%v",
+						failures, c.topics, c.groupID, err.Error())
+				}
 			}
 		case <-c.closeStart:
 			log4go.Warn("[consumer] close, topics:%v, groupID:%v, failures:%v", c.topics, c.groupID, failures)
