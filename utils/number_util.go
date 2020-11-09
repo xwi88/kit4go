@@ -36,10 +36,15 @@ func ByteToFloat64(bytes []byte) float64 {
 	return math.Float64frombits(bits)
 }
 
+func ToFixed(num float64, precision int) float64 {
+	n10 := math.Pow10(precision)
+	n := int(num*n10 + math.Copysign(0.5, num*n10))
+	return float64(n) / n10
+}
+
 // Round round
 func Round(f float64, n int) float64 {
-	n10 := math.Pow10(n)
-	return math.Trunc((f+0.5/n10)*n10) / n10
+	return ToFixed(f, n)
 }
 
 // RandomInt 随机数 int
