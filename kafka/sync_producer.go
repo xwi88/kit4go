@@ -3,7 +3,7 @@ package kafka
 
 import (
 	"github.com/Shopify/sarama"
-	"github.com/kdpujie/log4go"
+	"github.com/xwi88/log4go"
 
 	"github.com/xwi88/kit4go/utils"
 )

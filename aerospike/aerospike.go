@@ -7,7 +7,7 @@ import (
 	"time"
 
 	as "github.com/aerospike/aerospike-client-go"
-	"github.com/kdpujie/log4go"
+	"github.com/xwi88/log4go"
 )
 
 // Client aerospike client

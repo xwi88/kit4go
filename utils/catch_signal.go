@@ -7,7 +7,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/kdpujie/log4go"
+	"github.com/xwi88/log4go"
 )
 
 const (

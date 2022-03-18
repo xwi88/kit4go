@@ -7,12 +7,11 @@ import (
 
 	"github.com/Shopify/sarama"
 	cluster "github.com/bsm/sarama-cluster"
-	"github.com/kdpujie/log4go"
+	"github.com/xwi88/log4go"
 )
 
 func TestConsumerConsume(t *testing.T) {
-	w := log4go.NewConsoleWriterWithLevel(log4go.DEBUG)
-	w.SetColor(true)
+	w := log4go.NewConsoleWriterWithOptions(log4go.ConsoleWriterOptions{Level: log4go.LevelFlagDebug})
 	log4go.Register(w)
 
 	config := cluster.NewConfig()
@@ -62,11 +61,11 @@ func TestConsumerConsume(t *testing.T) {
 
 }
 
-func testConsumer(msg *sarama.ConsumerMessage) {
+func testConsumer(msg *sarama.ConsumerMessage) (err error) {
 	data := make(map[string]interface{})
-	_ = json.Unmarshal(msg.Value, &data)
+	err = json.Unmarshal(msg.Value, &data)
 	log4go.Debug("[TestConsumerGroupConsume] testConsumer, topic:%v, partition:%v, offset:%v, timestamp:%v, "+
 		"value:%+v",
 		msg.Topic, msg.Partition, msg.Offset, msg.Timestamp, data)
-	time.Sleep(time.Second * 1)
+	return err
 }

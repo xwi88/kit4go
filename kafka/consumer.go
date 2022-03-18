@@ -6,7 +6,7 @@ import (
 
 	"github.com/Shopify/sarama"
 	cluster "github.com/bsm/sarama-cluster"
-	"github.com/kdpujie/log4go"
+	"github.com/xwi88/log4go"
 )
 
 // Consumer simple consumer

@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/Shopify/sarama"
-	"github.com/kdpujie/log4go"
+	"github.com/xwi88/log4go"
 )
 
 // TODO: refactor, init & get & start & close & restart & restartWithConfig

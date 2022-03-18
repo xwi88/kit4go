@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/Shopify/sarama"
-	"github.com/kdpujie/log4go"
+	"github.com/xwi88/log4go"
 )
 
 type exampleConsumerGroupHandler struct{}
@@ -32,7 +32,7 @@ func (h exampleConsumerGroupHandler) ConsumeClaim(sess sarama.ConsumerGroupSessi
 }
 
 func TestConsumerGroupConsume(t *testing.T) {
-	w := log4go.NewConsoleWriterWithLevel(log4go.DEBUG)
+	w := log4go.NewConsoleWriterWithOptions(log4go.ConsoleWriterOptions{Level: log4go.LevelFlagDebug})
 	w.SetColor(true)
 	log4go.Register(w)
 
@@ -79,7 +79,7 @@ func TestConsumerGroupConsume(t *testing.T) {
 	// single run
 	handler := exampleConsumerGroupHandler{}
 	go group.StartConsumer(ctx, handler)
-	time.Sleep(time.Second * 60)
+	time.Sleep(time.Second * 5)
 	_ = group.Close()
 	time.Sleep(time.Second * 5)
 

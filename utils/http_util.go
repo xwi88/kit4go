@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/kdpujie/log4go"
+	"github.com/xwi88/log4go"
 )
 
 // LocalIPByTCP  get local ip through the public server

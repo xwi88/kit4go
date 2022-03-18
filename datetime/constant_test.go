@@ -6,13 +6,13 @@ import (
 
 func TestGetDateTimeLayoutISO8601WithFormatAndZoneOffset(t *testing.T) {
 	outputFormat := ""
-	formats := []string{LayoutTime, LayoutTimeShort,LayoutDateISO8601, LayoutDateISO8601Short,
+	formats := []string{LayoutTime, LayoutTimeShort, LayoutDateISO8601, LayoutDateISO8601Short,
 		LayoutDateTime, LayoutDateTimeShort}
 	zoneOffsets := []int{0, +8}
 	for i := range formats {
 		for j := range zoneOffsets {
 			offset := zoneOffsets[j]
-			outputFormat = GetDateTimeLayoutISO8601WithFormatAndZoneOffset(formats[i], offset)
+			outputFormat = GetDateTimeLayoutWithFormatAndZoneOffset(formats[i], offset)
 			t.Logf("format:%v, zoneOffset:%v, output:%s", formats[i], offset, outputFormat)
 		}
 	}
@@ -32,7 +32,7 @@ func TestGetDateTimeLayoutISO8601WithFormatAndZoneOffset(t *testing.T) {
 	for i := range formats {
 		for j := range zoneOffsets {
 			offset := zoneOffsets[j]
-			outputFormat = GetDateTimeLayoutISO8601WithFormatAndZoneOffset(formats[i], offset)
+			outputFormat = GetDateTimeLayoutWithFormatAndZoneOffset(formats[i], offset)
 			t.Logf("format:%v, zoneOffset:%v, output:%s", formats[i], offset, outputFormat)
 		}
 	}

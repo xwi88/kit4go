@@ -12,7 +12,7 @@ import (
 	"time"
 
 	_ "github.com/go-sql-driver/mysql" // init and register mysql driver
-	"github.com/kdpujie/log4go"
+	"github.com/xwi88/log4go"
 )
 
 // Client MySql transaction db
